@@ -301,6 +301,20 @@ final class GameTests {
     #expect(game.moves.map(\.?.san).contains("gxh1=Q+"))
   }
 
+  @Test func gameWithEnPassant() {
+    // 1. e4 e6 2. e5 d5 3. exd6 (en passant)
+    var epGame = Game()
+    let index = epGame.make(moves: ["e4", "e6", "e5", "d5", "exd6"], from: .minimum)
+
+    #expect(epGame.moves[index]?.san == "exd6")
+    #expect(epGame.positions[index]?.piece(at: .d6)?.color == .white)
+    #expect(epGame.positions[index]?.piece(at: .d6)?.kind == .pawn)
+    // the captured black pawn (which never occupied d6) must be gone,
+    // and the capturing white pawn must have left e5.
+    #expect(epGame.positions[index]?.piece(at: .d5) == nil)
+    #expect(epGame.positions[index]?.piece(at: .e5) == nil)
+  }
+
 }
 
 extension GameTests {

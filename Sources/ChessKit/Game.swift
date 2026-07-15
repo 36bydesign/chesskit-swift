@@ -108,6 +108,23 @@ public struct Game: Codable, Hashable, Sendable {
       newPosition.castle(castling)
     }
 
+    // `Board.move(pieceAt:to:)` is the only place that otherwise tracks
+    // en passant eligibility, and this method intentionally bypasses
+    // `Board`. Without mirroring that bookkeeping here, a pawn double
+    // push made via `make` never becomes en-passant-capturable, so
+    // `SANParser` can't resolve a subsequent "exd6"-style capture and
+    // PGN replay of en passant captures fails.
+    if case .move = move.result, move.piece.kind == .pawn,
+      abs(move.start.rank.value - move.end.rank.value) == 2
+    {
+      let pawn = Piece(.pawn, color: move.piece.color, square: move.end)
+      newPosition.enPassant = EnPassant(pawn: pawn)
+      newPosition.enPassantIsPossible = true
+    } else {
+      newPosition.enPassant = nil
+      newPosition.enPassantIsPossible = false
+    }
+
     if let promotedPiece = move.promotedPiece {
       newPosition.promote(pieceAt: move.end, to: promotedPiece.kind)
     }
