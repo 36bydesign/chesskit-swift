@@ -18,6 +18,18 @@ struct SANParserTests {
     #expect(longCastle?.result == .castle(.bQ))
   }
 
+  @Test func castlingWithCheckSuffix() {
+    let p1 = Position(fen: "r3k3/8/8/8/8/8/8/4K2R w Kq - 0 1")!
+    let shortCastleCheck = SANParser.parse(move: "O-O+", in: p1)
+    #expect(shortCastleCheck?.result == .castle(.wK))
+    #expect(shortCastleCheck?.checkState == .check)
+
+    let p2 = Position(fen: "r3k3/8/8/8/8/8/8/5RK1 b q - 0 1")!
+    let longCastleMate = SANParser.parse(move: "O-O-O#", in: p2)
+    #expect(longCastleMate?.result == .castle(.bQ))
+    #expect(longCastleMate?.checkState == .checkmate)
+  }
+
   @Test func enPassant() {
     let p = Position(fen: "rnbqkbnr/pp2pppp/8/2pP4/8/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 1")!
     let enPassant = SANParser.parse(move: "dxc6", in: p)
